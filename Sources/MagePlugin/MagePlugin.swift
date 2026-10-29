@@ -260,7 +260,7 @@ public let magePlugin = GaeaPluginDefinition(
     version: "0.1.0",
     minGaea: "0.2.0",
     team: "CFZS6RXUCP",
-    repo: "https://github.com/xocialize/gaea-plugin-mage-flow",
+    repo: "https://github.com/xocialize-code/gaea-plugin-mage-flow",
     title: "Mage-Flow",
     summary: "Microsoft's Mage-Flow (MIT): a 4.1B native-resolution NR-MMDiT with Qwen3-VL-4B conditioning. Text-to-image "
         + "(RL-aligned and the 4-step Turbo) and square instruction editing from up to 3 references (RL, Turbo and Base). "
