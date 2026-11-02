@@ -17,7 +17,7 @@ let package = Package(
         kitPath.map { .package(path: $0) }
             ?? .package(url: "https://github.com/xocialize-code/gaea-plugin-kit.git", from: "0.3.0"),
         .package(url: "https://github.com/xocialize/mage-flow-swift.git", exact: "0.12.0"),
-        .package(url: "https://github.com/xocialize/mlx-engine-swift.git", from: "0.72.0"),
+        .package(url: "https://github.com/xocialize/mlx-engine-swift.git", from: "0.73.1"),
     ],
     targets: [
         .target(

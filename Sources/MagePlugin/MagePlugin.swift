@@ -257,7 +257,7 @@ func offerModel(_ model: Model) -> JSONValue {
 
 public let magePlugin = GaeaPluginDefinition(
     id: "com.xocialize.gaea.mage-flow",
-    version: "0.1.0",
+    version: "0.1.1",
     minGaea: "0.2.0",
     team: "CFZS6RXUCP",
     repo: "https://github.com/xocialize-code/gaea-plugin-mage-flow",
