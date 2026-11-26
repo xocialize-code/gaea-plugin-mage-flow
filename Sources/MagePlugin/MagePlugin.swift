@@ -257,7 +257,7 @@ func offerModel(_ model: Model) -> JSONValue {
 
 public let magePlugin = GaeaPluginDefinition(
     id: "com.xocialize.gaea.mage-flow",
-    version: "0.1.2",
+    version: "0.1.3",
     minGaea: "0.2.0",
     team: "CFZS6RXUCP",
     repo: "https://github.com/xocialize-code/gaea-plugin-mage-flow",
@@ -268,10 +268,12 @@ public let magePlugin = GaeaPluginDefinition(
     license: "Apache-2.0",
     executable: "gaea-mage-flow-worker",
     models: Model.allCases.map { model in
-        model.isEdit
+        var definition: ModelDefinition = model.isEdit
             ? .engine(MageFlowEditPackage.self, id: model.rawValue, title: model.title, lanes: lanes(model), operations: [edit(model)])
             : .engine(MageFlowT2IPackage.self, id: model.rawValue, title: model.title, lanes: lanes(model),
                       operations: [generate(model)])
+        definition.manifest = withoutAdapters(definition.manifest)
+        return definition
     },
     offers: Model.allCases.map { model in
         model.isEdit
@@ -280,3 +282,26 @@ public let magePlugin = GaeaPluginDefinition(
             : PluginManifest.Offer(operation: "image.generate", profile: "image", model: offerModel(model), params: params(model),
                                    defaults: ["count": 1], limits: limits)
     })
+
+/// mage-flow-swift declares typed adapters on its surfaces (a LoRA on Mage-Flow, a LoRA or an IC adapter on the edit
+/// models), and the GaeaPluginKit this resolves (0.16.0) offers them to Gaea as `adapter_support`. This plugin doesn't put a run's adapters on
+/// its requests (`generate` and `edit` build them without `job.adapterRefs()`), so the worker would refuse every run that
+/// carries one. Until it does, the declaration (and the surface's `adapters` parameter) comes off each model's manifest:
+/// no offer says it takes adapters, as in 0.1.1, whose kit (0.3.0) offered none.
+func withoutAdapters(_ manifest: PackageManifest) -> PackageManifest {
+    do {
+        guard var object = try JSONSerialization.jsonObject(with: JSONEncoder().encode(manifest)) as? [String: Any],
+              let surfaces = object["surfaces"] as? [[String: Any]] else { return manifest }
+        object["surfaces"] = surfaces.map { surface -> [String: Any] in
+            var surface = surface
+            surface["adapters"] = nil
+            if let parameters = surface["parameters"] as? [[String: Any]] {
+                surface["parameters"] = parameters.filter { $0["name"] as? String != "adapters" }
+            }
+            return surface
+        }
+        return try JSONDecoder().decode(PackageManifest.self, from: JSONSerialization.data(withJSONObject: object))
+    } catch {
+        preconditionFailure("Mage-Flow's package manifest didn't round-trip without its adapters: \(error)")
+    }
+}
